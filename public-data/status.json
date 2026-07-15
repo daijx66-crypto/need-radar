@@ -1,0 +1,109 @@
+{
+ "schema_version": 2,
+ "mode": "github",
+ "status": "success",
+ "started_at": "2026-07-15T15:44:13+08:00",
+ "finished_at": "2026-07-15T15:45:39+08:00",
+ "generated_at": "2026-07-15T15:45:38+08:00",
+ "needs": 2,
+ "collectors": [
+  {
+   "label": "aihot",
+   "status": "success",
+   "count": 31,
+   "secs": 0.8
+  },
+  {
+   "label": "apple_appstore",
+   "status": "success",
+   "count": 77,
+   "secs": 19.2
+  },
+  {
+   "label": "follow_builders",
+   "status": "success",
+   "count": 18,
+   "secs": 2.6
+  },
+  {
+   "label": "github_trending",
+   "status": "success",
+   "count": 14,
+   "secs": 2.2
+  },
+  {
+   "label": "hackernews",
+   "status": "success",
+   "count": 280,
+   "secs": 13.9
+  },
+  {
+   "label": "huggingface",
+   "status": "success",
+   "count": 80,
+   "secs": 2.6
+  },
+  {
+   "label": "producthunt",
+   "status": "success",
+   "count": 40,
+   "secs": 2.0
+  },
+  {
+   "label": "reddit",
+   "status": "empty",
+   "count": 0,
+   "secs": 31.6
+  },
+  {
+   "label": "stackexchange",
+   "status": "success",
+   "count": 80,
+   "secs": 6.3
+  },
+  {
+   "label": "v2ex",
+   "status": "success",
+   "count": 49,
+   "secs": 3.6
+  },
+  {
+   "label": "weibo_hot",
+   "status": "success",
+   "count": 50,
+   "secs": 0.5
+  },
+  {
+   "label": "bilibili",
+   "status": "skipped",
+   "count": 0,
+   "secs": 0.0
+  },
+  {
+   "label": "opencli_douyin",
+   "status": "skipped",
+   "count": 0,
+   "secs": 0.0
+  },
+  {
+   "label": "opencli_tiktok",
+   "status": "skipped",
+   "count": 0,
+   "secs": 0.0
+  },
+  {
+   "label": "opencli_twitter",
+   "status": "skipped",
+   "count": 0,
+   "secs": 0.0
+  },
+  {
+   "label": "opencli_xiaohongshu",
+   "status": "skipped",
+   "count": 0,
+   "secs": 0.0
+  }
+ ],
+ "missing_required_sources": [],
+ "failed_sources": []
+}

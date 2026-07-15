@@ -1,0 +1,37 @@
+.DS_Store
+.claude/
+.gstack/
+.trash/
+**/__pycache__/
+**/*.py[cod]
+.venv/
+venv/
+logs/
+dist/
+.tmp/
+
+# Private/local evidence. Public builds are generated from an allowlist.
+data/raw/
+data/cache/
+data/eval/
+data/history/
+data/needs.json
+data/last_run.json
+data/needs.sample.json
+reports/
+demo/out/
+docs/superpowers/
+
+# Personal ranking profile and feedback exports stay local.
+scorer/profile.json
+scorer/persona_rubric.json
+scorer/enrich_llm.py
+*.feedback.json
+*.local.json
+
+# Local macOS scheduling is not part of the public project.
+scripts/com.needradar.daily.plist
+
+# Legacy collector uses browser impersonation / placeholder cookies and is not
+# distributed in the safe public repository.
+collectors/bilibili.py

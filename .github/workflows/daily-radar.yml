@@ -1,0 +1,90 @@
+name: Daily Need Radar
+
+on:
+  workflow_dispatch:
+  schedule:
+    # User intent: 08:37 Beijing time. The explicit timezone avoids UTC drift.
+    - cron: "37 8 * * *"
+      timezone: "Asia/Shanghai"
+
+concurrency:
+  group: daily-need-radar
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out default branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore compact comparison history
+        run: python3 scripts/restore_public_history.py
+
+      - name: Run regression tests
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Measure demand-gate precision and recall
+        env:
+          NEED_RADAR_MODE: github
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python3 scripts/evaluate_demand_gate.py --min-precision 0.8 --min-recall 0.5
+
+      - name: Refresh portable public sources
+        env:
+          NEED_RADAR_MODE: github
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python3 scripts/refresh.py
+
+      - name: Enforce daily quality gate
+        run: python3 scripts/quality_gate.py
+
+      - name: Build sanitized public data and Pages artifact
+        run: python3 scripts/build_public.py --keep-days 30
+
+      - name: Commit derived public data
+        run: |
+          git config user.name "need-radar-bot"
+          git config user.email "need-radar-bot@users.noreply.github.com"
+          git add public-data
+          if git diff --cached --quiet; then
+            echo "No public data change"
+          else
+            git commit -m "data: refresh daily radar [skip ci]"
+            git push
+          fi
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: refresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,105 @@
+{
+  "policy_version": "demand-gate-v1",
+  "cases": [
+    {
+      "id": "paid-manual-review-monitoring",
+      "expected": "need",
+      "signal": {
+        "source_label": "Reddit", "signal_type": "question", "lang": "en",
+        "title": "Looking for a tool to monitor competitor app store reviews",
+        "text": "I pay a VA $200 per month to check reviews manually every week. Is there a tool that sends alerts?",
+        "keywords": ["tool", "monitor", "competitor", "reviews", "alerts"]
+      }
+    },
+    {
+      "id": "paid-codex-team-plan",
+      "expected": "need",
+      "signal": {
+        "source_label": "V2EX", "signal_type": "question", "lang": "zh",
+        "title": "三个人每天用 Codex，团队套餐怎么买更省",
+        "text": "现在每月付 200 美元，仍然经常撞额度，有没有能统计用量并推荐套餐的工具？",
+        "keywords": ["codex", "团队", "套餐", "用量", "工具"]
+      }
+    },
+    {
+      "id": "app-export-gap",
+      "expected": "need",
+      "signal": {
+        "source_label": "App Store", "signal_type": "review", "lang": "en",
+        "title": "No way to export my history",
+        "text": "I use this every day but there is no export option. I need a CSV for my accountant.",
+        "keywords": ["export", "history", "csv", "accountant"]
+      }
+    },
+    {
+      "id": "software-recommendation",
+      "expected": "need",
+      "signal": {
+        "source_label": "Stack Exchange · Software Recommendations", "signal_type": "question", "lang": "en",
+        "title": "Open source alternative to a coding assistant with no usage limits",
+        "text": "I need a tool for a client project because the paid assistant hits limits every day.",
+        "keywords": ["tool", "coding", "assistant", "limits"]
+      }
+    },
+    {
+      "id": "show-hn-promotion",
+      "expected": "noise",
+      "signal": {
+        "source_label": "Hacker News", "signal_type": "complaint", "lang": "en",
+        "title": "Show HN: I built a free alternative to Zapier",
+        "text": "We launched today, check out my product.",
+        "keywords": ["alternative", "zapier", "product"]
+      }
+    },
+    {
+      "id": "market-research",
+      "expected": "noise",
+      "signal": {
+        "source_label": "Reddit", "signal_type": "question", "lang": "en",
+        "title": "What profitable SaaS should I build?",
+        "text": "Looking for inspiration and product ideas that can make money.",
+        "keywords": ["profitable", "saas", "ideas"]
+      }
+    },
+    {
+      "id": "sheets-howto",
+      "expected": "noise",
+      "signal": {
+        "source_label": "Stack Exchange · Web Applications", "signal_type": "question", "lang": "en",
+        "title": "How do I rank rows in Google Sheets?",
+        "text": "I need the correct formula for this column.",
+        "keywords": ["google", "sheets", "formula"]
+      }
+    },
+    {
+      "id": "consumer-phone-advice",
+      "expected": "noise",
+      "signal": {
+        "source_label": "V2EX", "signal_type": "question", "lang": "zh",
+        "title": "预算 5000 买什么手机",
+        "text": "求推荐一个续航好的手机。",
+        "keywords": ["手机", "预算", "推荐"]
+      }
+    },
+    {
+      "id": "transaction-dispute",
+      "expected": "noise",
+      "signal": {
+        "source_label": "App Store", "signal_type": "complaint", "lang": "en",
+        "title": "Bad experience",
+        "text": "The seller sent a stained hoodie and refused a refund. I do not recommend this app.",
+        "keywords": ["seller", "refund", "experience"]
+      }
+    },
+    {
+      "id": "builder-opinion",
+      "expected": "noise",
+      "signal": {
+        "source_label": "Follow Builders", "signal_type": "trend", "lang": "en",
+        "title": "My thoughts on the future of AI",
+        "text": "A long industry opinion without a user asking for a product.",
+        "keywords": ["thoughts", "future", "ai"]
+      }
+    }
+]
+}

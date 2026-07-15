@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark light" />
+  <title>需求雷达 · Demand Radar</title>
+  <meta name="description" content="聚合海内外信号，优先筛出购买理由明确、可验证的产品机会。" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%230a0a0d'/%3E%3Cpath d='M14 34h10l5-16 8 28 5-12h8' fill='none' stroke='%236b9bff' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip" href="#attentionBoard">跳到今日情报</a>
+
+  <!-- ================= MASTHEAD ================= -->
+  <header class="mast" id="top">
+    <div class="mast-row">
+      <div class="brand">
+        <p class="micro">ATTENTION DESK · 注意力保护型需求情报</p>
+        <h1>需求雷达</h1>
+        <p class="lede">每天只交付少量值得看的新需求和重要变化。其余信息被明确下沉，让你知道现在该看什么，也知道什么可以放心忽略。</p>
+      </div>
+      <div class="mast-tools">
+        <button class="feedback-export" id="feedbackExport" type="button" title="反馈只保存在当前浏览器；点击导出 JSON">导出本地反馈</button>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换深浅主题" title="切换深浅主题">
+          <span class="tt-icon" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+
+    <p class="genline">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="genStatus" class="micro">数据加载中…</span>
+      <span id="sampleFlag" class="flag" hidden>样例数据</span>
+    </p>
+
+    <section class="daily-brief" aria-labelledby="dailyTitle">
+      <div class="brief-copy">
+        <p class="brief-kicker micro">TODAY'S SIGNAL</p>
+        <h2 id="dailyTitle">正在整理今天值得看的内容…</h2>
+        <p id="dailySummary" class="brief-summary">只保留有来源、有理由、值得占用注意力的条目。</p>
+      </div>
+      <div class="attention-summary" id="attentionSummary" aria-label="今日注意力预算"></div>
+    </section>
+
+    <nav class="stream-tabs" id="streamTabs" aria-label="情报分类">
+      <button type="button" class="stream-tab is-active" data-view="today" aria-pressed="true">今日</button>
+      <button type="button" class="stream-tab" data-view="need" aria-pressed="false">新需求</button>
+      <button type="button" class="stream-tab" data-view="shift" aria-pressed="false">重要变化</button>
+      <button type="button" class="stream-tab" data-view="builder" aria-pressed="false">建造者</button>
+      <button type="button" class="stream-tab" data-view="watch" aria-pressed="false">观察池</button>
+    </nav>
+
+    <details class="metrics-disclosure" id="metricsDisclosure">
+      <summary><span>数据底座</span><span class="micro" id="metricsSummary">加载中…</span></summary>
+      <dl class="stats" id="stats" aria-label="总览指标"></dl>
+      <div class="sources" id="sources" aria-label="信号来源分布"></div>
+    </details>
+  </header>
+
+  <main class="attention-board" id="attentionBoard" aria-live="polite"></main>
+
+  <!-- ================= CONTROLS ================= -->
+  <section class="controls" id="legacyControls" aria-label="筛选与排序" hidden>
+    <div class="search">
+      <span class="search-ic" aria-hidden="true"></span>
+      <input id="search" type="search" placeholder="搜索机会、购买理由或痛点摘要…" autocomplete="off" aria-label="关键词搜索" />
+      <button class="clear" id="searchClear" type="button" aria-label="清空搜索" hidden>清空</button>
+    </div>
+
+    <div class="facets">
+      <div class="facet">
+        <span class="facet-label micro">地区</span>
+        <div class="chips" id="regionChips" role="group" aria-label="按地区筛选"></div>
+      </div>
+      <div class="facet">
+        <span class="facet-label micro">机会强度</span>
+        <div class="chips" id="verdictChips" role="group" aria-label="按判定筛选"></div>
+      </div>
+      <div class="facet facet-sort">
+        <span class="facet-label micro">排序</span>
+        <div class="select-wrap">
+          <select id="sortSelect" aria-label="排序维度">
+            <option value="total">总分</option>
+            <option value="pain">痛点强度</option>
+            <option value="narrow">人群窄度</option>
+            <option value="wtp">付费意愿</option>
+            <option value="freq">重复频次</option>
+            <option value="gap">供给缺口</option>
+            <option value="alpha">Alpha 窗口</option>
+            <option value="fit">能力匹配</option>
+            <option value="feasible">实现可行</option>
+            <option value="signal_count">信号数</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <p class="count micro" id="count" aria-live="polite"></p>
+  </section>
+
+  <!-- ================= BOARD ================= -->
+  <main class="board" id="board" aria-label="机会卡片" hidden></main>
+
+  <!-- ================= WATCHLIST ================= -->
+  <section class="watch-section" id="watchSection" aria-label="候选观察池" hidden>
+    <div class="section-head">
+      <div>
+        <p class="micro">候选观察池</p>
+        <h2>未入主榜但值得跟踪的信号</h2>
+      </div>
+      <p class="micro" id="watchCount" aria-live="polite"></p>
+    </div>
+    <div class="watchlist" id="watchlist"></div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="foot">
+    <p class="micro">需求雷达 · 新需求 / 重要变化 / 建造者三条流。反馈只保存在本地浏览器，原始证据和需求分不会被个性化覆盖。</p>
+  </footer>
+
+  <!-- ================= DETAIL OVERLAY ================= -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="ovTitle" hidden>
+    <div class="ov-panel" id="ovPanel" role="document"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

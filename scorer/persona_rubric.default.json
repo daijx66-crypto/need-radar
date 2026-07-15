@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "purpose": "Generic review lenses for the public project. Private named-persona rubrics are not required.",
+    "version": "1"
+  },
+  "evidence": {
+    "display_name": "证据审查",
+    "tag": "证据 / 购买理由",
+    "avatar": "E",
+    "core": ["Prefer observed cost, repeated pain, and actual workarounds over stated interest."],
+    "weights": {"pain": 0.9, "narrow": 0.7, "wtp": 1.0, "freq": 0.8, "gap": 0.7, "alpha": 0.4, "fit": 0.5, "feasible": 0.7},
+    "lenses": {
+      "strong": "{人群} 已经为 {痛点} 付出时间或金钱；先验证是否愿意切换。",
+      "crowded": "供给很多，先证明现有方案为什么仍然失败。",
+      "weak": "证据还停留在兴趣或热度，尚不足以证明购买理由。"
+    }
+  },
+  "focus": {
+    "display_name": "聚焦审查",
+    "tag": "人群 / 场景",
+    "avatar": "F",
+    "core": ["A useful opportunity names one group, one recurring situation, and one painful job."],
+    "weights": {"pain": 0.8, "narrow": 1.0, "wtp": 0.7, "freq": 0.8, "gap": 0.8, "alpha": 0.4, "fit": 0.6, "feasible": 0.8},
+    "lenses": {
+      "strong": "人群和场景足够具体，可以用一个小切口验证。",
+      "crowded": "如果不能说清服务谁、在哪一步更好，这只是同质化供给。",
+      "weak": "人群太泛，先缩到一个能真实访谈和观察的场景。"
+    }
+  },
+  "feasibility": {
+    "display_name": "可行性审查",
+    "tag": "实验 / 风险",
+    "avatar": "V",
+    "core": ["Prefer a cheap falsifiable experiment before building a full product."],
+    "weights": {"pain": 0.7, "narrow": 0.7, "wtp": 0.8, "freq": 0.6, "gap": 0.7, "alpha": 0.5, "fit": 0.8, "feasible": 1.0},
+    "lenses": {
+      "strong": "可以先用人工服务或假界面验证，失败成本可控。",
+      "crowded": "先验证差异化和获客路径，避免直接投入完整开发。",
+      "weak": "当前验证动作太大，先拆成一周内可以证伪的实验。"
+    }
+  }
+}

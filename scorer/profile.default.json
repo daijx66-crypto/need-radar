@@ -1,0 +1,20 @@
+{
+  "_note": "Public generic defaults. Copy to scorer/profile.json for private local personalization.",
+  "domains": {
+    "AI/Agent/编程": ["ai", "llm", "agent", "automation", "workflow", "api", "model", "智能体", "自动化", "编程"],
+    "产品/独立开发": ["product", "founder", "indie", "saas", "mvp", "产品", "独立开发", "创业", "需求"],
+    "内容/创作者": ["content", "writing", "creator", "newsletter", "内容", "写作", "创作者"]
+  },
+  "attention": {
+    "focus_keywords": [],
+    "deprioritize_keywords": ["娱乐", "八卦", "促销"],
+    "preferred_sources": ["AI HOT", "Follow Builders", "Hacker News", "V2EX"],
+    "now_limit": 5,
+    "later_limit": 8,
+    "now_thresholds": {"need": 60, "shift": 68, "builder": 68},
+    "later_thresholds": {"need": 50, "shift": 55, "builder": 55},
+    "max_age_hours": {"need": 336, "shift": 96, "builder": 168},
+    "now_kind_limits": {"need": 3, "shift": 3, "builder": 1},
+    "later_kind_limits": {"need": 3, "shift": 4, "builder": 3}
+  }
+}
