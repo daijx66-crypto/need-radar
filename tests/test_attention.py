@@ -229,6 +229,18 @@ class AttentionTest(unittest.TestCase):
         self.assertEqual(result["items"][0]["source_score"], 61)
         self.assertGreater(result["items"][0]["attention_score"], 61)
 
+    def test_source_and_kind_weights_are_bounded_and_applied_locally(self):
+        from scorer.attention import build_attention
+
+        profile = copy.deepcopy(PROFILE)
+        profile["attention"]["source_weights"] = {"V2EX": 999}
+        profile["attention"]["kind_weights"] = {"need": 7, "unknown": 999}
+        result = build_attention([need(title="普通需求", score=50)], [], profile, previous=None, as_of=AS_OF)
+
+        row = result["items"][0]
+        self.assertEqual(row["source_score"], 50)
+        self.assertEqual(row["attention_score"], 77)
+
     def test_snapshot_round_trip_uses_latest_earlier_date(self):
         from scorer.attention import load_previous_snapshot, save_snapshot
 

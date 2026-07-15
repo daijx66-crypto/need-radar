@@ -30,6 +30,7 @@
     builder: { label: "建造者", mark: "B" },
   };
   const FEEDBACK_KEY = "need-radar-feedback-v1";
+  const PROFILE_KEY = "need-radar-profile-v1";
   const FEEDBACK_META = {
     useful: { label: "有价值", delta: 8 },
     later: { label: "稍后", delta: -4 },
@@ -59,6 +60,7 @@
     sort: "total",
     lastFocus: null,
     feedback: {},
+    localProfile: null,
   };
 
   /* ---------- dom helpers ---------- */
@@ -105,9 +107,85 @@
     try { localStorage.setItem(FEEDBACK_KEY, JSON.stringify(state.feedback)); } catch {}
   }
 
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, Number(value) || 0));
+
+  function cleanList(value) {
+    return Array.isArray(value)
+      ? value.filter((row) => typeof row === "string" && row.trim()).slice(0, 60).map((row) => row.trim().slice(0, 80))
+      : [];
+  }
+
+  function cleanMap(value, allowedKeys = null, min = -15, max = 15) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return Object.fromEntries(Object.entries(value).filter(([key]) => !allowedKeys || allowedKeys.includes(key)).slice(0, 60)
+      .map(([key, weight]) => [String(key).slice(0, 80), clamp(weight, min, max)]));
+  }
+
+  function normalizeLocalProfile(payload) {
+    const source = payload && typeof payload === "object" ? payload : {};
+    const raw = source.attention && typeof source.attention === "object" ? source.attention : source;
+    const kinds = ["need", "shift", "builder"];
+    const thresholds = (key, defaults) => ({ ...defaults, ...cleanMap(raw[key], kinds, 0, 100) });
+    const limits = (key, defaults) => ({ ...defaults, ...cleanMap(raw[key], kinds, 0, 20) });
+    return {
+      schema_version: 1,
+      name: typeof source.name === "string" ? source.name.slice(0, 80) : "本地偏好",
+      attention: {
+        focus_keywords: cleanList(raw.focus_keywords),
+        deprioritize_keywords: cleanList(raw.deprioritize_keywords),
+        source_weights: cleanMap(raw.source_weights),
+        kind_weights: cleanMap(raw.kind_weights, kinds),
+        now_limit: Math.round(clamp(raw.now_limit ?? 5, 0, 12)),
+        later_limit: Math.round(clamp(raw.later_limit ?? 8, 0, 20)),
+        now_thresholds: thresholds("now_thresholds", { need: 60, shift: 68, builder: 68 }),
+        later_thresholds: thresholds("later_thresholds", { need: 50, shift: 55, builder: 55 }),
+        now_kind_limits: limits("now_kind_limits", { need: 3, shift: 3, builder: 1 }),
+        later_kind_limits: limits("later_kind_limits", { need: 3, shift: 4, builder: 3 }),
+      },
+    };
+  }
+
+  function loadLocalProfile() {
+    try {
+      const saved = localStorage.getItem(PROFILE_KEY);
+      return saved ? normalizeLocalProfile(JSON.parse(saved)) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function saveLocalProfile(profile) {
+    state.localProfile = normalizeLocalProfile(profile);
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(state.localProfile)); } catch {}
+  }
+
+  function importProfileFromHash() {
+    const encoded = new URLSearchParams(location.hash.slice(1)).get("profile");
+    if (!encoded) return;
+    try {
+      const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(encoded.length / 4) * 4, "=");
+      const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+      saveLocalProfile(JSON.parse(new TextDecoder().decode(bytes)));
+    } catch {
+      state.localProfile = loadLocalProfile();
+    }
+    history.replaceState(null, "", `${location.pathname}${location.search}`);
+  }
+
+  function profileAdjustment(item) {
+    const settings = state.localProfile?.attention;
+    if (!settings) return 0;
+    const text = `${item.title || ""} ${item.summary || ""} ${item.category || ""}`.toLowerCase();
+    const focus = settings.focus_keywords.filter((word) => text.includes(word.toLowerCase())).length;
+    const down = settings.deprioritize_keywords.filter((word) => text.includes(word.toLowerCase())).length;
+    const source = settings.source_weights[item.source] || 0;
+    const kind = settings.kind_weights[item.kind] || 0;
+    return clamp(Math.min(15, focus * 3) - Math.min(30, down * 8) + source + kind, -35, 25);
+  }
+
   function feedbackAdjustment(item) {
     const direct = state.feedback[item.stable_id]?.value;
-    let delta = FEEDBACK_META[direct]?.delta || 0;
+    let delta = (FEEDBACK_META[direct]?.delta || 0) + profileAdjustment(item);
     const related = Object.values(state.feedback).filter((row) => row.stable_id !== item.stable_id);
     const sourceNet = related.reduce((sum, row) => {
       if (row.source !== item.source) return sum;
@@ -131,11 +209,42 @@
 
   function personalizedItems() {
     const order = { now: 0, later: 1, ignore: 2 };
-    return (state.attention.items || []).map((item) => ({
+    const rows = (state.attention.items || []).map((item) => ({
       ...item,
       local_score: Math.max(0, Math.min(100, (item.attention_score || 0) + feedbackAdjustment(item))),
       effective_priority: effectivePriority(item),
-    })).sort((a, b) =>
+    }));
+    const settings = state.localProfile?.attention;
+    if (settings) {
+      const nowCounts = { need: 0, shift: 0, builder: 0 };
+      const laterCounts = { need: 0, shift: 0, builder: 0 };
+      let nowUsed = 0;
+      let laterUsed = 0;
+      rows.sort((a, b) => b.local_score - a.local_score || (a.rank || 999) - (b.rank || 999));
+      rows.forEach((item) => {
+        const feedback = state.feedback[item.stable_id]?.value;
+        if (!item.url || item.is_stale || feedback === "noise") {
+          item.effective_priority = "ignore";
+          return;
+        }
+        const kind = item.kind;
+        let desired = item.local_score >= settings.now_thresholds[kind] ? "now"
+          : item.local_score >= settings.later_thresholds[kind] ? "later" : "ignore";
+        if (feedback === "later" && desired === "now") desired = "later";
+        if (desired === "now" && nowUsed < settings.now_limit && nowCounts[kind] < settings.now_kind_limits[kind]) {
+          item.effective_priority = "now";
+          nowUsed += 1;
+          nowCounts[kind] += 1;
+        } else if (desired !== "ignore" && laterUsed < settings.later_limit && laterCounts[kind] < settings.later_kind_limits[kind]) {
+          item.effective_priority = "later";
+          laterUsed += 1;
+          laterCounts[kind] += 1;
+        } else {
+          item.effective_priority = "ignore";
+        }
+      });
+    }
+    return rows.sort((a, b) =>
       order[a.effective_priority] - order[b.effective_priority]
       || b.local_score - a.local_score
       || (a.rank || 999) - (b.rank || 999)
@@ -174,6 +283,27 @@
     link.download = `need-radar-feedback-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(link.href), 0);
+  }
+
+  function renderProfileStatus(message = "") {
+    const status = $("#profileStatus");
+    const button = $("#profileImport");
+    if (!status || !button) return;
+    const active = Boolean(state.localProfile);
+    status.textContent = message || (active ? `本地偏好：${state.localProfile.name}` : "本地偏好未启用");
+    status.classList.toggle("is-active", active);
+    button.textContent = active ? "更新本地偏好" : "导入本地偏好";
+  }
+
+  async function importProfileFile(file) {
+    try {
+      saveLocalProfile(JSON.parse(await file.text()));
+      renderProfileStatus("本地偏好已启用，仅保存在当前浏览器");
+      renderAttentionSummary();
+      renderAttention();
+    } catch {
+      renderProfileStatus("偏好文件无效，未修改当前设置");
+    }
   }
 
   function fallbackAttention() {
@@ -1005,6 +1135,12 @@
       apply(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
     });
     $("#feedbackExport").addEventListener("click", exportFeedback);
+    const profileFile = $("#profileFile");
+    $("#profileImport").addEventListener("click", () => profileFile.click());
+    profileFile.addEventListener("change", () => {
+      if (profileFile.files?.[0]) importProfileFile(profileFile.files[0]);
+      profileFile.value = "";
+    });
   }
 
   function bootRender() {
@@ -1013,9 +1149,12 @@
     buildFacets();
     render();
     renderRoute();
+    renderProfileStatus();
   }
 
   /* ---------- init ---------- */
+  state.localProfile = loadLocalProfile();
+  importProfileFromHash();
   wireControls();
   loadData();
 })();

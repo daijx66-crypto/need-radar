@@ -185,24 +185,33 @@ def main():
     parser.add_argument("--output", default=str(ROOT / "dist"))
     parser.add_argument("--public-data", default=str(ROOT / "public-data"))
     parser.add_argument("--keep-days", type=int, default=30)
+    parser.add_argument(
+        "--write-public-data",
+        action="store_true",
+        help="persist sanitized data to --public-data; intended for the GitHub runner",
+    )
     args = parser.parse_args()
     output = Path(args.output)
     public_data = Path(args.public_data)
 
-    payload = sanitize_payload(read_json(ROOT / "data" / "needs.json"))
-    status = sanitize_status(read_json(ROOT / "data" / "last_run.json"))
-    atomic_json(public_data / "needs.json", payload)
-    atomic_json(public_data / "status.json", status)
-    sanitize_history(ROOT / "data" / "history", public_data / "history", max(1, args.keep_days))
-    assert_public_safe(public_data)
-
     if output.exists():
         shutil.rmtree(output)
     shutil.copytree(ROOT / "web", output)
+    build_data = public_data if args.write_public_data else output / ".public-data-build"
+
+    payload = sanitize_payload(read_json(ROOT / "data" / "needs.json"))
+    status = sanitize_status(read_json(ROOT / "data" / "last_run.json"))
+    atomic_json(build_data / "needs.json", payload)
+    atomic_json(build_data / "status.json", status)
+    sanitize_history(ROOT / "data" / "history", build_data / "history", max(1, args.keep_days))
+    assert_public_safe(build_data)
+
     (output / "data").mkdir(parents=True, exist_ok=True)
-    shutil.copy2(public_data / "needs.json", output / "data" / "needs.json")
-    shutil.copy2(public_data / "status.json", output / "data" / "status.json")
-    shutil.copytree(public_data / "history", output / "data" / "history")
+    shutil.copy2(build_data / "needs.json", output / "data" / "needs.json")
+    shutil.copy2(build_data / "status.json", output / "data" / "status.json")
+    shutil.copytree(build_data / "history", output / "data" / "history")
+    if not args.write_public_data:
+        shutil.rmtree(build_data)
     (output / ".nojekyll").write_text("", encoding="utf-8")
     assert_public_safe(output)
     print(f"public build: {output} · {len(payload['attention']['items'])} attention items")

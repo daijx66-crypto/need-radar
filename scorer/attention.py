@@ -15,6 +15,8 @@ DEFAULT_ATTENTION = {
     "focus_keywords": [],
     "deprioritize_keywords": [],
     "preferred_sources": [],
+    "source_weights": {},
+    "kind_weights": {},
     "now_limit": 5,
     "later_limit": 8,
     "now_thresholds": {"need": 60, "shift": 68, "builder": 68},
@@ -94,6 +96,15 @@ def _profile_attention(profile):
         base = copy.deepcopy(DEFAULT_ATTENTION[key])
         base.update(merged.get(key) or {})
         merged[key] = {kind: max(0, int(value)) for kind, value in base.items()}
+    merged["source_weights"] = {
+        str(source): max(-15, min(15, float(value)))
+        for source, value in (merged.get("source_weights") or {}).items()
+    }
+    merged["kind_weights"] = {
+        kind: max(-15, min(15, float(value)))
+        for kind, value in (merged.get("kind_weights") or {}).items()
+        if kind in ("need", "shift", "builder")
+    }
     return merged
 
 
@@ -171,7 +182,9 @@ def _personalization(item, settings):
     focus = sum(1 for word in settings["focus_keywords"] if str(word).lower() in text)
     down = sum(1 for word in settings["deprioritize_keywords"] if str(word).lower() in text)
     source_bonus = 5 if item["source"] in settings["preferred_sources"] else 0
-    return min(12, focus * 4) - min(30, down * 15) + source_bonus
+    source_bonus += settings["source_weights"].get(item["source"], 0)
+    kind_bonus = settings["kind_weights"].get(item["kind"], 0)
+    return min(12, focus * 4) - min(30, down * 15) + source_bonus + kind_bonus
 
 
 def _why(item):

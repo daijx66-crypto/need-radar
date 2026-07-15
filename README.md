@@ -18,7 +18,7 @@
 - **名人点评是模板生成的"参考语气"**，非核心判断；决策以八维分 + 证据原帖为准。
 - **Apple 差评源产出不稳**（受节流，单次 47～424 条波动），导致每日需求条数波动。
 - **demo 生成器（`demo/`）暂停扩展**：需求识别达标前不批量出 demo。
-- **个性化反馈完全留在浏览器本地**：「有价值 / 噪声 / 稍后」只调整本地展示排序，可导出 JSON；不会上传，也不会自动修改公共评分规则。
+- **个性化偏好与反馈完全留在浏览器本地**：可以导入私有偏好，并用「有价值 / 噪声 / 稍后」持续校准；两者都不会上传，也不会自动修改公共评分规则。
 
 ---
 
@@ -42,7 +42,7 @@ python3 -m http.server 8910 --directory ~/Desktop/需求雷达
 ```bash
 NEED_RADAR_MODE=github python3 scripts/refresh.py
 python3 scripts/quality_gate.py
-python3 scripts/build_public.py
+python3 scripts/build_public.py --write-public-data
 python3 -m http.server 8910 --directory dist
 ```
 
@@ -98,7 +98,7 @@ web/index.html    注意力工作台，默认先呈现少量行动信息
 
 `痛点强度 pain` · `人群窄度 narrow` · `付费意愿 wtp` · `重复频次 freq` · `供给缺口 gap` · `Alpha窗口 alpha` · `能力匹配 fit` · `实现可行 feasible`
 权重：pain .22 / wtp .18 / gap .15 / freq .12 / narrow .10 / alpha .08 / feasible .08 / fit .07（课程：痛点与需求强度最高，人数权重低）。
-`能力匹配 fit` 和首页注意力排序都读 `scorer/profile.json`。其中 `attention.focus_topics`、`deprioritize_topics`、`preferred_sources`、`now_limit`、`later_limit` 可直接调整个性化；默认配置仍可供其他用户开箱使用。
+`能力匹配 fit` 和本地生成的注意力排序都读不入 Git 的 `scorer/profile.json`。其中 `attention.focus_keywords`、`deprioritize_keywords`、`source_weights`、`kind_weights`、阈值和每日上限可直接调整个性化；默认配置仍可供其他用户开箱使用。公开 Pages 还支持把同一份 `attention` 配置导入当前浏览器，详情见 [`docs/PERSONALIZATION.md`](docs/PERSONALIZATION.md)。
 公共默认审查视角在 `scorer/persona_rubric.default.json`。你可以在本地创建不入 Git 的 `scorer/persona_rubric.json`；公开数据构建器不会发布本地视角或对应点评。
 
 ---

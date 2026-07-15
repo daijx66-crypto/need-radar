@@ -1,9 +1,19 @@
 import unittest
+from pathlib import Path
+from subprocess import CompletedProcess
+from unittest import mock
 
-from scripts.refresh import classify_collector, overall_status
+from scripts.refresh import classify_collector, overall_status, run_process
 
 
 class RefreshStatusTest(unittest.TestCase):
+    @mock.patch("scripts.refresh.time.monotonic", side_effect=[100.0, 104.2])
+    @mock.patch("scripts.refresh.subprocess.run", return_value=CompletedProcess([], 0, "ok", ""))
+    def test_process_duration_uses_monotonic_clock(self, _run, _clock):
+        result = run_process("source", Path("collector.py"), print_status=False)
+
+        self.assertEqual(result["secs"], 4.2)
+
     def test_zero_exit_with_empty_payload_is_not_success(self):
         result = classify_collector(
             {"label": "source", "status": "success", "ok": True},

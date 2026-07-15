@@ -21,6 +21,8 @@
         <p class="lede">每天只交付少量值得看的新需求和重要变化。其余信息被明确下沉，让你知道现在该看什么，也知道什么可以放心忽略。</p>
       </div>
       <div class="mast-tools">
+        <button class="profile-import" id="profileImport" type="button" title="偏好文件只写入当前浏览器，不会上传">导入本地偏好</button>
+        <input id="profileFile" type="file" accept="application/json,.json" hidden />
         <button class="feedback-export" id="feedbackExport" type="button" title="反馈只保存在当前浏览器；点击导出 JSON">导出本地反馈</button>
         <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换深浅主题" title="切换深浅主题">
           <span class="tt-icon" aria-hidden="true"></span>
@@ -32,6 +34,7 @@
       <span class="dot" aria-hidden="true"></span>
       <span id="genStatus" class="micro">数据加载中…</span>
       <span id="sampleFlag" class="flag" hidden>样例数据</span>
+      <span id="profileStatus" class="profile-status micro">本地偏好未启用</span>
     </p>
 
     <section class="daily-brief" aria-labelledby="dailyTitle">
@@ -116,7 +119,7 @@
 
   <!-- ================= FOOTER ================= -->
   <footer class="foot">
-    <p class="micro">需求雷达 · 新需求 / 重要变化 / 建造者三条流。反馈只保存在本地浏览器，原始证据和需求分不会被个性化覆盖。</p>
+    <p class="micro">需求雷达 · 新需求 / 重要变化 / 建造者三条流。偏好与反馈只保存在本地浏览器，原始证据和需求分不会被个性化覆盖。</p>
   </footer>
 
   <!-- ================= DETAIL OVERLAY ================= -->

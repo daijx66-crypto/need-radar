@@ -9,6 +9,8 @@
     "focus_keywords": [],
     "deprioritize_keywords": ["娱乐", "八卦", "促销"],
     "preferred_sources": ["AI HOT", "Follow Builders", "Hacker News", "V2EX"],
+    "source_weights": {},
+    "kind_weights": {},
     "now_limit": 5,
     "later_limit": 8,
     "now_thresholds": {"need": 60, "shift": 68, "builder": 68},

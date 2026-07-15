@@ -81,11 +81,11 @@ h1, h2, h3 { font-weight: 650; letter-spacing: -.01em; }
 .brand h1 { font-size: clamp(1.95rem, 5.4vw, 3.2rem); line-height: 1.02; margin: .5rem 0 .55rem; letter-spacing: -.025em; }
 .brand .lede { color: var(--ink-2); max-width: 60ch; margin: 0; font-size: clamp(.9rem, 2vw, .98rem); }
 .mast-tools { flex: none; display: flex; align-items: center; gap: .5rem; }
-.feedback-export {
+.feedback-export, .profile-import {
   min-height: 38px; padding: 0 .75rem; border: 1px solid var(--line); border-radius: var(--r-sm);
   background: transparent; color: var(--ink-2); font: 600 .72rem var(--sans); cursor: pointer;
 }
-.feedback-export:hover { border-color: var(--accent); color: var(--ink); }
+.feedback-export:hover, .profile-import:hover { border-color: var(--accent); color: var(--ink); }
 
 .theme-toggle {
   width: 44px; height: 44px; border-radius: 50%;
@@ -101,6 +101,8 @@ h1, h2, h3 { font-weight: 650; letter-spacing: -.01em; }
 .genline .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 22%, transparent); flex: none; }
 .genline.is-sample .dot { background: var(--warn); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 22%, transparent); }
 .flag { font-family: var(--mono); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; color: var(--warn); border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); padding: .14rem .5rem; border-radius: 5px; }
+.profile-status { margin-left: auto; text-transform: none; letter-spacing: .03em; }
+.profile-status.is-active { color: var(--ok); }
 
 /* stat tiles */
 .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: .6rem; margin: 1.1rem 0 0; padding: 0; }
@@ -509,5 +511,6 @@ table.formtab tr:last-child td { border-bottom: none; }
   .intel-summary { -webkit-line-clamp: 3; }
   .intel-reason { padding-left: .55rem; }
   .intel-feedback { justify-content: flex-start; margin: -.15rem 0 .75rem 3.25rem; padding: 0; flex-wrap: wrap; }
-  .feedback-export { display: none; }
+  .feedback-export, .profile-import { display: none; }
+  .profile-status { margin-left: 0; }
 }

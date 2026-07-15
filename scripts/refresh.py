@@ -77,7 +77,9 @@ def tail_text(value, limit=400):
 
 
 def run_process(label, relpath, timeout=200, print_status=True):
-    started = time.time()
+    # Wall-clock time can jump when the OS synchronizes its clock. Duration and
+    # timeout reporting must use a monotonic clock.
+    started = time.monotonic()
     try:
         result = subprocess.run(
             [sys.executable, str(relpath)],
@@ -86,7 +88,7 @@ def run_process(label, relpath, timeout=200, print_status=True):
             text=True,
             timeout=timeout,
         )
-        seconds = round(time.time() - started, 1)
+        seconds = round(time.monotonic() - started, 1)
         status = "success" if result.returncode == 0 else "failed"
         record = {
             "label": label,

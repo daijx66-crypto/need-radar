@@ -28,6 +28,7 @@ scorer/persona_rubric.json
 scorer/enrich_llm.py
 *.feedback.json
 *.local.json
+local/
 
 # Local macOS scheduling is not part of the public project.
 scripts/com.needradar.daily.plist
