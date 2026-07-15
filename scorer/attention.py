@@ -181,8 +181,15 @@ def _personalization(item, settings):
     text = f"{item['title']} {item['summary']} {item['category']}".lower()
     focus = sum(1 for word in settings["focus_keywords"] if str(word).lower() in text)
     down = sum(1 for word in settings["deprioritize_keywords"] if str(word).lower() in text)
-    source_bonus = 5 if item["source"] in settings["preferred_sources"] else 0
-    source_bonus += settings["source_weights"].get(item["source"], 0)
+    source_name = item["source"].lower()
+    preferred = any(str(source).lower() in source_name for source in settings["preferred_sources"])
+    source_matches = [
+        (len(str(source)), value)
+        for source, value in settings["source_weights"].items()
+        if str(source).lower() in source_name
+    ]
+    source_bonus = 5 if preferred else 0
+    source_bonus += max(source_matches, default=(0, 0))[1]
     kind_bonus = settings["kind_weights"].get(item["kind"], 0)
     return min(12, focus * 4) - min(30, down * 15) + source_bonus + kind_bonus
 

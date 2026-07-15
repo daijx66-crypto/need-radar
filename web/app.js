@@ -61,6 +61,7 @@
     lastFocus: null,
     feedback: {},
     localProfile: null,
+    profileOrigin: "",
   };
 
   /* ---------- dom helpers ---------- */
@@ -154,8 +155,9 @@
     }
   }
 
-  function saveLocalProfile(profile) {
+  function saveLocalProfile(profile, origin = "browser") {
     state.localProfile = normalizeLocalProfile(profile);
+    state.profileOrigin = origin;
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify(state.localProfile)); } catch {}
   }
 
@@ -165,22 +167,36 @@
     try {
       const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(encoded.length / 4) * 4, "=");
       const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
-      saveLocalProfile(JSON.parse(new TextDecoder().decode(bytes)));
+      saveLocalProfile(JSON.parse(new TextDecoder().decode(bytes)), "install-link");
     } catch {
       state.localProfile = loadLocalProfile();
     }
     history.replaceState(null, "", `${location.pathname}${location.search}`);
   }
 
-  function profileAdjustment(item) {
+  function profileSignals(item) {
     const settings = state.localProfile?.attention;
-    if (!settings) return 0;
+    if (!settings) return { delta: 0, reasons: [] };
     const text = `${item.title || ""} ${item.summary || ""} ${item.category || ""}`.toLowerCase();
-    const focus = settings.focus_keywords.filter((word) => text.includes(word.toLowerCase())).length;
-    const down = settings.deprioritize_keywords.filter((word) => text.includes(word.toLowerCase())).length;
-    const source = settings.source_weights[item.source] || 0;
+    const focus = settings.focus_keywords.filter((word) => text.includes(word.toLowerCase()));
+    const down = settings.deprioritize_keywords.filter((word) => text.includes(word.toLowerCase()));
+    const sourceName = String(item.source || "").toLowerCase();
+    const sourceMatch = Object.entries(settings.source_weights)
+      .filter(([name]) => sourceName.includes(name.toLowerCase()))
+      .sort((a, b) => b[0].length - a[0].length)[0];
+    const source = sourceMatch?.[1] || 0;
     const kind = settings.kind_weights[item.kind] || 0;
-    return clamp(Math.min(15, focus * 3) - Math.min(30, down * 8) + source + kind, -35, 25);
+    const delta = clamp(Math.min(15, focus.length * 3) - Math.min(30, down.length * 8) + source + kind, -35, 25);
+    const reasons = [];
+    if (focus.length) reasons.push(`命中 ${focus.slice(0, 2).join(" / ")}`);
+    if (down.length) reasons.push(`下沉 ${down.slice(0, 2).join(" / ")}`);
+    if (source) reasons.push(`来源 ${source > 0 ? "+" : ""}${source}`);
+    if (kind) reasons.push(`${TYPE_META[item.kind]?.label || item.kind} ${kind > 0 ? "+" : ""}${kind}`);
+    return { delta, reasons };
+  }
+
+  function profileAdjustment(item) {
+    return profileSignals(item).delta;
   }
 
   function feedbackAdjustment(item) {
@@ -266,6 +282,7 @@
       };
     }
     saveFeedback();
+    renderProfileStatus();
     renderAttentionSummary();
     renderAttention();
   }
@@ -290,14 +307,18 @@
     const button = $("#profileImport");
     if (!status || !button) return;
     const active = Boolean(state.localProfile);
-    status.textContent = message || (active ? `本地偏好：${state.localProfile.name}` : "本地偏好未启用");
+    const feedbackCount = Object.keys(state.feedback).length;
+    const origin = state.profileOrigin === "local-file" ? "本机自动" : "浏览器私有";
+    status.textContent = message || (active
+      ? `${state.localProfile.name} · ${origin} · ${feedbackCount} 条反馈`
+      : "本地偏好未启用");
     status.classList.toggle("is-active", active);
     button.textContent = active ? "更新本地偏好" : "导入本地偏好";
   }
 
   async function importProfileFile(file) {
     try {
-      saveLocalProfile(JSON.parse(await file.text()));
+      saveLocalProfile(JSON.parse(await file.text()), "file");
       renderProfileStatus("本地偏好已启用，仅保存在当前浏览器");
       renderAttentionSummary();
       renderAttention();
@@ -365,6 +386,12 @@
     }
   }
 
+  async function loadPrivateLocalProfile() {
+    if (!["localhost", "127.0.0.1", "::1"].includes(location.hostname)) return;
+    const profile = await tryFetchJson("../local/profile.json") || await tryFetchJson("local/profile.json");
+    if (profile) saveLocalProfile(profile, "local-file");
+  }
+
   async function loadData() {
     let data = await tryFetch("data/needs.json") || await tryFetch("../data/needs.json");
     if (data) {
@@ -376,7 +403,7 @@
     if (!data) {
       $("#genStatus").textContent = "数据加载失败：未找到 needs.json 或 needs.sample.json";
       $("#board").appendChild(
-        el("div", "empty", "<b>无法加载数据。</b><br>请确认从仓库根目录起服务：<br><code>python3 -m http.server 8910 --directory &lt;repo根&gt;</code>")
+        el("div", "empty", "<b>无法加载数据。</b><br>请确认从仓库根目录起服务：<br><code>python3 -m http.server 8910 --bind 127.0.0.1 --directory &lt;repo根&gt;</code>")
       );
       return;
     }
@@ -517,6 +544,12 @@
     meta.appendChild(el("span", "intel-change", esc(item.change_label || "持续关注")));
     meta.appendChild(el("span", null, esc(item.source || "未知来源")));
     meta.appendChild(el("span", null, esc(fmtSignalTime(item.published_at))));
+    const personal = profileSignals(item);
+    if (personal.delta) {
+      const marker = el("span", "intel-personal", `为你 ${personal.delta > 0 ? "+" : ""}${personal.delta}`);
+      marker.title = personal.reasons.join(" · ");
+      meta.appendChild(marker);
+    }
     body.appendChild(meta);
     body.appendChild(el("h3", null, esc(item.title || "(无标题)")));
     if (item.summary) body.appendChild(el("p", "intel-summary", esc(item.summary)));
@@ -1154,7 +1187,8 @@
 
   /* ---------- init ---------- */
   state.localProfile = loadLocalProfile();
+  state.profileOrigin = state.localProfile ? "browser" : "";
   importProfileFromHash();
   wireControls();
-  loadData();
+  loadPrivateLocalProfile().then(loadData);
 })();

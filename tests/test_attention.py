@@ -241,6 +241,21 @@ class AttentionTest(unittest.TestCase):
         self.assertEqual(row["source_score"], 50)
         self.assertEqual(row["attention_score"], 77)
 
+    def test_source_weight_matches_a_specific_source_variant(self):
+        from scorer.attention import build_attention
+
+        profile = copy.deepcopy(PROFILE)
+        profile["attention"]["preferred_sources"] = []
+        profile["attention"]["source_weights"] = {"Stack Exchange": 8}
+        profile["attention"]["kind_weights"] = {}
+        item = need(title="普通需求", score=50)
+        item["sources"] = ["Stack Exchange · Software Recommendations"]
+        item["evidence"][0]["source_label"] = item["sources"][0]
+
+        result = build_attention([item], [], profile, previous=None, as_of=AS_OF)
+
+        self.assertEqual(result["items"][0]["attention_score"], 58)
+
     def test_snapshot_round_trip_uses_latest_earlier_date(self):
         from scorer.attention import load_previous_snapshot, save_snapshot
 

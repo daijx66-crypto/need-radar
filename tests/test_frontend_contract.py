@@ -54,6 +54,9 @@ class FrontendContractTest(unittest.TestCase):
         self.assertIn('id="profileFile"', html)
         self.assertIn('const PROFILE_KEY = "need-radar-profile-v1"', script)
         self.assertIn("function importProfileFromHash", script)
+        self.assertIn("function loadPrivateLocalProfile", script)
+        self.assertIn('tryFetchJson("../local/profile.json")', script)
+        self.assertIn("function profileSignals", script)
         self.assertIn("localStorage.setItem(PROFILE_KEY", script)
         self.assertNotIn("fetch(profileFile", script)
 

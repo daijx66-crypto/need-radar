@@ -31,11 +31,13 @@ cd ~/Desktop/需求雷达
 python3 scripts/refresh.py        # 或 bash scripts/refresh.sh
 
 # 2) 起站看结果（必须用 http，不能 file://）
-python3 -m http.server 8910 --directory ~/Desktop/需求雷达
+python3 -m http.server 8910 --bind 127.0.0.1 --directory ~/Desktop/需求雷达
 # 浏览器打开： http://localhost:8910/web/index.html
 ```
 
 打开首页先看「今日」：5 条现在看、8 条稍后看。需要专门找机会时切到「新需求」；想理解最近发生了什么时切到「重要变化」；想追踪一线建设者时切到「建设者」。点需求条目仍可查看购买理由、当前替代方案、MVP 切口、验证动作、八维打分和证据原帖。
+
+在 `localhost / 127.0.0.1` 打开时，页面会自动读取不入 Git 的 `local/profile.json`，无需反复导入。服务必须只绑定 `127.0.0.1`，避免局域网中的其他设备读取私有画像。
 
 若要模拟公开仓库的无登录运行环境：
 
