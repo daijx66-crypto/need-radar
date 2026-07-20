@@ -2,76 +2,76 @@
  "schema_version": 2,
  "mode": "github",
  "status": "success",
- "started_at": "2026-07-19T04:06:03+00:00",
- "finished_at": "2026-07-19T04:06:52+00:00",
- "generated_at": "2026-07-19T04:06:52+00:00",
- "needs": 4,
+ "started_at": "2026-07-20T04:25:16+00:00",
+ "finished_at": "2026-07-20T04:26:00+00:00",
+ "generated_at": "2026-07-20T04:26:00+00:00",
+ "needs": 5,
  "collectors": [
   {
    "label": "aihot",
    "status": "success",
-   "count": 14,
+   "count": 12,
    "secs": 1.4
   },
   {
    "label": "apple_appstore",
    "status": "success",
    "count": 50,
-   "secs": 11.6
+   "secs": 10.1
   },
   {
    "label": "follow_builders",
    "status": "success",
-   "count": 18,
-   "secs": 0.4
+   "count": 13,
+   "secs": 0.1
   },
   {
    "label": "github_trending",
    "status": "success",
-   "count": 11,
-   "secs": 1.4
+   "count": 19,
+   "secs": 1.1
   },
   {
    "label": "hackernews",
    "status": "success",
    "count": 280,
-   "secs": 3.1
+   "secs": 2.5
   },
   {
    "label": "huggingface",
    "status": "success",
    "count": 80,
-   "secs": 0.8
+   "secs": 0.7
   },
   {
    "label": "producthunt",
    "status": "success",
    "count": 40,
-   "secs": 0.4
+   "secs": 0.2
   },
   {
    "label": "reddit",
    "status": "empty",
    "count": 0,
-   "secs": 22.9
+   "secs": 22.4
   },
   {
    "label": "stackexchange",
    "status": "success",
-   "count": 79,
-   "secs": 3.3
+   "count": 81,
+   "secs": 3.0
   },
   {
    "label": "v2ex",
    "status": "success",
-   "count": 50,
-   "secs": 1.4
+   "count": 54,
+   "secs": 1.2
   },
   {
    "label": "weibo_hot",
    "status": "success",
-   "count": 51,
-   "secs": 1.1
+   "count": 52,
+   "secs": 1.4
   },
   {
    "label": "bilibili",
